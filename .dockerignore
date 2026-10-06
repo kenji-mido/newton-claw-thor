@@ -1,0 +1,6 @@
+.git
+.venv
+**/logs
+newton_sim/_control_logs
+research_papers
+*.pdf

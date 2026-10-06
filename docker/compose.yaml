@@ -1,0 +1,71 @@
+# newton-claw on the DGX Spark: newton (control server + GPU jobs), ollama (Gemma 4 12B), webchat (browser
+# chat + the viser viewer relayed at /viewer/). A Kubernetes version (kept elsewhere) runs
+# the same three images with the same settings in one pod; keep the two in step.
+#   docker compose -f docker/compose.yaml up -d --build
+#   (add -f docker/compose.override.yaml for the LAN / Tailscale addresses; see compose.override.example.yaml)
+#   docker compose -f docker/compose.yaml exec newton claw train --task Newton-Cartpole-v0 --headless
+#
+# Ports (nothing is published on 0.0.0.0):
+#   8095 web chat + viewer (/viewer/) → localhost; LAN / Tailscale in docker/compose.override.yaml (git-ignored)
+#   5561 control API (no auth)        → localhost only (webchat reaches it on the compose network)
+#   8090 viser, direct (debug)        → localhost only; browsers use :8095/viewer/
+#   8001 Ollama (debug)               → localhost only
+name: newton-claw
+
+services:
+  newton:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: newton-claw:spark
+    container_name: newton-claw
+    restart: unless-stopped
+    gpus: all
+    shm_size: 8g
+    environment:
+      NEWTON_CONTROL_HOST: 0.0.0.0        # inside the container; exposure is limited by `ports` below
+      # One job once the control server answers (docker/entrypoint.sh); "" starts nothing. Same in Kubernetes.
+      AUTOSTART: play --task Newton-Velocity-Flat-Unitree-Go2-v0 --pretrained --web
+    volumes:
+      - ..:/workspace                     # code + logs/checkpoints (newton_lab/logs is gitignored)
+      - newton-cache:/home/ubuntu/.cache        # Newton assets + Warp kernel cache
+    ports:
+      - "127.0.0.1:5561:5561"
+      - "127.0.0.1:8090:8090"
+
+  # Local model for the chat agent (agents/chat.py talks Ollama's /api/chat). Not published on the
+  # host's :8000 (another service owns it); localhost:8001 is only for debugging.
+  ollama:
+    image: ollama/ollama:0.35.1
+    container_name: newton-claw-ollama
+    restart: unless-stopped
+    gpus: all
+    environment:
+      OLLAMA_CONTEXT_LENGTH: "32768"
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes:
+      - ollama-models:/root/.ollama
+    ports:
+      - "127.0.0.1:8001:11434"
+
+  # Browser chat: same tools/prompt as agents/chat.py, plus the viser view embedded next to it.
+  webchat:
+    build:
+      context: webchat
+    image: newton-claw-webchat:spark
+    container_name: newton-claw-webchat
+    restart: unless-stopped
+    depends_on: [newton, ollama]
+    environment:
+      NEWTON_LLM_URL: http://ollama:11434
+      NEWTON_LLM_MODEL: gemma4:12b
+      NEWTON_CONTROL_HOST: newton
+      NEWTON_VISER_PORT: "8090"           # relayed at /viewer/
+    volumes:
+      - ..:/workspace:ro
+    ports:
+      - "127.0.0.1:8095:8095"
+
+volumes:
+  newton-cache:
+  ollama-models:

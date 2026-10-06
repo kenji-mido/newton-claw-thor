@@ -1,0 +1,378 @@
+{
+  "categories": [
+    {
+      "name": "情報・一覧",
+      "samples": [
+        {
+          "ja": "何を学習できる？",
+          "en": "what can I train?"
+        },
+        {
+          "ja": "タスクの一覧を見せて",
+          "en": "list the tasks"
+        },
+        {
+          "ja": "四足ロボットのタスクはどれ？",
+          "en": "which tasks are quadrupeds?"
+        },
+        {
+          "ja": "これまでに学習したポリシーは？",
+          "en": "what have I trained?"
+        },
+        {
+          "ja": "Go2 の学習済みランを一覧して",
+          "en": "list the trained runs for the Go2"
+        },
+        {
+          "ja": "表示できるロボットは？",
+          "en": "what robots can I open?"
+        },
+        {
+          "ja": "メモリとディスクの空きは？",
+          "en": "how much memory and disk is free?"
+        },
+        {
+          "ja": "デバイスの状態を教えて",
+          "en": "show the device status"
+        }
+      ]
+    },
+    {
+      "name": "クイックテスト (Cartpole)",
+      "samples": [
+        {
+          "ja": "cartpole で学習のクイックテストをして",
+          "en": "run a quick cartpole training test"
+        },
+        {
+          "ja": "cartpole を 1024 環境で 60 イテレーション学習して",
+          "en": "train the cartpole with 1024 envs for 60 iterations"
+        },
+        {
+          "ja": "cartpole をヘッドレスで学習して",
+          "en": "train the cartpole headless"
+        },
+        {
+          "ja": "cartpole の学習済みポリシーを見せて",
+          "en": "show me the cartpole policy"
+        },
+        {
+          "ja": "cartpole のポリシーを評価して",
+          "en": "evaluate the cartpole policy"
+        }
+      ]
+    },
+    {
+      "name": "学習 (Train)",
+      "samples": [
+        {
+          "ja": "Go2 を学習して",
+          "en": "train the Go2"
+        },
+        {
+          "ja": "Go2 を 200 イテレーション学習して",
+          "en": "train the Go2 for 200 iterations"
+        },
+        {
+          "ja": "Go2 をヘッドレスで学習して(最速)",
+          "en": "train the Go2 headless"
+        },
+        {
+          "ja": "Go2 を 2048 環境で学習して",
+          "en": "train the Go2 with 2048 envs"
+        },
+        {
+          "ja": "Go2 の学習を前回の続きから再開して",
+          "en": "resume training the Go2"
+        },
+        {
+          "ja": "Go2 を seed 42 で学習して",
+          "en": "train the Go2 with seed 42"
+        },
+        {
+          "ja": "G1 を学習して",
+          "en": "train the G1"
+        },
+        {
+          "ja": "G1 を 2048 環境で 1000 イテレーション学習して",
+          "en": "train the G1 with 2048 envs for 1000 iterations"
+        },
+        {
+          "ja": "G1 を 800 イテレーション、ヘッドレスで学習して",
+          "en": "train the G1 for 800 iterations headless"
+        },
+        {
+          "ja": "ANYmal C を学習して",
+          "en": "train the Anymal"
+        },
+        {
+          "ja": "ANYmal C を 500 イテレーション学習して",
+          "en": "train the Anymal for 500 iterations"
+        },
+        {
+          "ja": "Ant を学習して",
+          "en": "train the ant"
+        },
+        {
+          "ja": "MuJoCo Humanoid を学習して",
+          "en": "train the humanoid"
+        },
+        {
+          "ja": "Humanoid を 1024 環境で学習して",
+          "en": "train the humanoid with 1024 envs"
+        }
+      ]
+    },
+    {
+      "name": "進捗確認",
+      "samples": [
+        {
+          "ja": "学習の進み具合は？",
+          "en": "how is the training going?"
+        },
+        {
+          "ja": "学習は終わった？",
+          "en": "is the training done?"
+        },
+        {
+          "ja": "あと何分で終わる？",
+          "en": "how long until it finishes?"
+        },
+        {
+          "ja": "平均報酬とエピソード長を教えて",
+          "en": "what are the mean reward and episode length?"
+        },
+        {
+          "ja": "報酬の内訳(項目ごと)を見せて",
+          "en": "show the per-term rewards"
+        },
+        {
+          "ja": "いま何が動いている？",
+          "en": "what is running right now?"
+        }
+      ]
+    },
+    {
+      "name": "再生・推論 (Play)",
+      "samples": [
+        {
+          "ja": "Go2 が歩くところを見せて",
+          "en": "show me the Go2 walking"
+        },
+        {
+          "ja": "学習済みの参照ポリシーで Go2 を動かして",
+          "en": "run the pretrained Go2"
+        },
+        {
+          "ja": "Go2 を秒速 1m で前進させて",
+          "en": "show me the Go2 walking forward at 1 m/s"
+        },
+        {
+          "ja": "Go2 をゆっくり 0.5m/s で前進させて",
+          "en": "show me the Go2 walking forward at 0.5 m/s"
+        },
+        {
+          "ja": "Go2 を後ろ向きに歩かせて",
+          "en": "show me the Go2 walking backward at 0.5 m/s"
+        },
+        {
+          "ja": "Go2 を横歩きさせて",
+          "en": "show me the Go2 walking sideways at 0.5 m/s"
+        },
+        {
+          "ja": "Go2 をその場で旋回させて",
+          "en": "show me the Go2 turning in place at 1 rad/s"
+        },
+        {
+          "ja": "Go2 を前進しながら左に曲がらせて",
+          "en": "show me the Go2 walking forward at 0.8 m/s while turning left at 0.5 rad/s"
+        },
+        {
+          "ja": "G1 が歩くところを見せて",
+          "en": "show me the G1 walking"
+        },
+        {
+          "ja": "参照ポリシーで G1 を歩かせて",
+          "en": "run the pretrained G1"
+        },
+        {
+          "ja": "G1 を 0.5m/s で前進させて",
+          "en": "show me the G1 walking forward at 0.5 m/s"
+        },
+        {
+          "ja": "ANYmal C が歩くところを見せて",
+          "en": "show me the Anymal walking"
+        },
+        {
+          "ja": "参照ポリシーで ANYmal C を歩かせて",
+          "en": "run the pretrained Anymal"
+        },
+        {
+          "ja": "Ant が走るところを見せて",
+          "en": "show me the ant running"
+        },
+        {
+          "ja": "Humanoid が走るところを見せて",
+          "en": "show me the humanoid running"
+        }
+      ]
+    },
+    {
+      "name": "評価 (Eval)",
+      "samples": [
+        {
+          "ja": "Go2 のポリシーを評価して",
+          "en": "evaluate the Go2 policy"
+        },
+        {
+          "ja": "参照ポリシーの Go2 を評価して",
+          "en": "evaluate the pretrained Go2 policy"
+        },
+        {
+          "ja": "G1 のポリシーを評価して",
+          "en": "evaluate the G1 policy"
+        },
+        {
+          "ja": "ANYmal C のポリシーを評価して",
+          "en": "evaluate the Anymal policy"
+        },
+        {
+          "ja": "評価結果は？(転倒数・追従誤差)",
+          "en": "what were the evaluation results?"
+        },
+        {
+          "ja": "どのくらい良いポリシー？",
+          "en": "how good is the Go2 policy?"
+        }
+      ]
+    },
+    {
+      "name": "ロボットを表示 (Open)",
+      "samples": [
+        {
+          "ja": "Franka を表示して",
+          "en": "open the Franka"
+        },
+        {
+          "ja": "UR10 を表示して",
+          "en": "open the UR10"
+        },
+        {
+          "ja": "Allegro ハンドを表示して",
+          "en": "open the Allegro hand"
+        },
+        {
+          "ja": "Unitree G1 を表示して",
+          "en": "open the Unitree G1"
+        },
+        {
+          "ja": "Unitree H1 を表示して",
+          "en": "open the Unitree H1"
+        },
+        {
+          "ja": "Unitree Go2 を表示して",
+          "en": "open the Unitree Go2"
+        },
+        {
+          "ja": "ANYmal C を表示して",
+          "en": "open the Anymal C"
+        },
+        {
+          "ja": "ANYmal D を表示して",
+          "en": "open the Anymal D"
+        },
+        {
+          "ja": "cartpole を表示して",
+          "en": "open the cartpole"
+        },
+        {
+          "ja": "ant と humanoid のデモを表示して",
+          "en": "open the ant humanoid demo"
+        }
+      ]
+    },
+    {
+      "name": "チューニング",
+      "samples": [
+        {
+          "ja": "チューニングガイドを見せて",
+          "en": "show the tuning guide"
+        },
+        {
+          "ja": "Go2 をもっと探索させて学習して",
+          "en": "train the Go2 with more exploration"
+        },
+        {
+          "ja": "Go2 をなめらかな歩容になるよう学習して",
+          "en": "train the Go2 for a smoother gait"
+        },
+        {
+          "ja": "Go2 を学習率 5e-4 で学習して",
+          "en": "train the Go2 with learning rate 5e-4"
+        },
+        {
+          "ja": "G1 の胴体が傾かないように学習して",
+          "en": "train the G1 keeping the base more level"
+        },
+        {
+          "ja": "Go2 が跳ねないように学習して",
+          "en": "train the Go2 with less bouncing"
+        },
+        {
+          "ja": "報酬が伸びない。どう直す？",
+          "en": "the reward is not improving, how should I tune it?"
+        }
+      ]
+    },
+    {
+      "name": "ログ",
+      "samples": [
+        {
+          "ja": "ログを見せて",
+          "en": "show the log"
+        },
+        {
+          "ja": "直近 100 行のログを見せて",
+          "en": "show the last 100 lines of the log"
+        },
+        {
+          "ja": "エラーは出てる？",
+          "en": "are there any errors in the log?"
+        },
+        {
+          "ja": "なぜ失敗したの？ログから原因を教えて",
+          "en": "why did it fail? check the log"
+        },
+        {
+          "ja": "警告(Warning)は出てる？",
+          "en": "are there any warnings in the log?"
+        },
+        {
+          "ja": "学習ログの最新の報酬の内訳を見せて",
+          "en": "show the latest reward terms from the training log"
+        }
+      ]
+    },
+    {
+      "name": "停止・トラブル",
+      "samples": [
+        {
+          "ja": "止めて",
+          "en": "stop it"
+        },
+        {
+          "ja": "学習をキャンセルして",
+          "en": "cancel the training"
+        },
+        {
+          "ja": "GPU を空けて",
+          "en": "free the GPU"
+        },
+        {
+          "ja": "いまのジョブを止めて、Go2 を歩かせて",
+          "en": "stop the current job, then show me the Go2 walking"
+        }
+      ]
+    }
+  ]
+}

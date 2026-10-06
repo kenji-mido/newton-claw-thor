@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>newton-claw chat</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #667085; --border: #dde1e7;
+  --accent: #2f6fde; --accent-text: #ffffff; --user: #e8f0fe; --tool: #f1f3f6; --ok: #1a7f4b; --warn: #b54708;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #12151b; --panel: #1a1e26; --text: #e6e9ef; --muted: #98a2b3; --border: #2c323d;
+          --accent: #5b8def; --accent-text: #0b0e13; --user: #1f2b44; --tool: #222833; --ok: #4ccf8a; --warn: #f5a35c; }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; }
+.app { display: grid; grid-template-columns: minmax(360px, 520px) 1fr; height: 100vh; }
+.chat { display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--panel); min-height: 0; }
+header { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+header h1 { font-size: 16px; margin: 0; }
+header .sub { color: var(--muted); font-size: 12px; }
+.status { margin-top: 6px; font-size: 12px; padding: 6px 8px; border-radius: 6px; background: var(--tool); font-variant-numeric: tabular-nums; }
+.status .run { color: var(--ok); font-weight: 600; }
+.status .idle { color: var(--muted); }
+.statusrow { display: flex; gap: 6px; align-items: stretch; margin-top: 6px; }
+.statusrow .status { flex: 1; margin-top: 0; }
+.statusrow button { font-size: 12px; padding: 4px 10px; }
+.logpanel { display: none; margin-top: 6px; }
+.logpanel.open { display: block; }
+.logpanel pre { margin: 0; max-height: 34vh; overflow: auto; font: 11px/1.45 ui-monospace, monospace; white-space: pre-wrap; word-break: break-all;
+  background: var(--tool); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+.logpanel .meta label { white-space: nowrap; }
+.logpanel .meta span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.logpanel .meta { font-size: 11px; color: var(--muted); display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.log { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.msg { padding: 8px 12px; border-radius: 10px; white-space: pre-wrap; word-break: break-word; max-width: 95%; }
+.msg.user { background: var(--user); align-self: flex-end; }
+.msg.agent { background: var(--tool); align-self: flex-start; }
+.msg.err { color: var(--warn); }
+details.tool { font-size: 12px; color: var(--muted); align-self: flex-start; max-width: 95%; }
+details.tool summary { cursor: pointer; font-family: ui-monospace, monospace; }
+details.tool pre { white-space: pre-wrap; word-break: break-all; background: var(--tool); padding: 6px 8px; border-radius: 6px; max-height: 240px; overflow: auto; }
+.composer { border-top: 1px solid var(--border); padding: 10px 16px 14px; display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+select, textarea, input, button { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+select { padding: 5px 6px; min-width: 0; }
+#cat { flex: 0 1 170px; } #sample { flex: 1 1 200px; }
+textarea { width: 100%; resize: vertical; min-height: 54px; padding: 8px; }
+button { padding: 6px 12px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: default; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.spacer { flex: 1; }
+.catalog { max-height: 38vh; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; display: none; }
+.catalog.open { display: block; }
+.catalog h3 { font-size: 12px; color: var(--muted); margin: 8px 0 4px; }
+.catalog button { display: block; width: 100%; text-align: left; border: none; padding: 3px 6px; border-radius: 4px; }
+.catalog button:hover { background: var(--tool); }
+.catalog input { width: 100%; padding: 5px 8px; margin: 4px 0; }
+.viewer { display: flex; flex-direction: column; min-height: 0; }
+.viewer .bar { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--panel); font-size: 12px; color: var(--muted); }
+.viewer .bar a { color: var(--accent); }
+.viewer iframe { flex: 1; width: 100%; border: 0; background: #000; }
+.hint { color: var(--muted); font-size: 12px; }
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 50vh; height: auto; }
+  .chat { border-right: none; border-bottom: 1px solid var(--border); height: 70vh; }
+  .viewer { height: 60vh; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="chat">
+    <header>
+      <h1>newton-claw chat</h1>
+      <div class="sub" id="model">model: …</div>
+      <div class="statusrow">
+        <div class="status" id="status"><span class="idle">status: …</span></div>
+        <button type="button" id="toggleLogs" aria-expanded="false">ログ</button>
+      </div>
+      <div class="logpanel" id="logpanel">
+        <div class="meta"><span id="logfile">log</span><span class="spacer"></span>
+          <label><input type="checkbox" id="logFollow" checked> 自動更新</label></div>
+        <pre id="logtext">…</pre>
+      </div>
+    </header>
+    <div class="log" id="log">
+      <div class="hint">サンプルを選ぶと入力欄に入ります(編集してから送信できます)。GPU ジョブは同時に 1 つだけ — 別のことをする前に「止めて」。ビューアの起動には 10〜20 秒かかります。</div>
+    </div>
+    <div class="composer">
+      <div class="row">
+        <select id="cat" aria-label="カテゴリ"></select>
+        <select id="sample" aria-label="サンプル"></select>
+      </div>
+      <div class="catalog" id="catalog">
+        <input id="filter" placeholder="サンプルを絞り込み (例: G1, 評価, walking)">
+        <div id="catalogList"></div>
+      </div>
+      <textarea id="input" placeholder="例: Go2 が歩くところを見せて"></textarea>
+      <div class="row">
+        <span class="lang" role="group" aria-label="サンプルの言語">
+          <button type="button" data-lang="ja" aria-pressed="true">日本語</button>
+          <button type="button" data-lang="en" aria-pressed="false">English</button>
+        </span>
+        <button type="button" id="toggleCatalog">全サンプル一覧</button>
+        <span class="spacer"></span>
+        <button type="button" id="reset" title="会話履歴をリセット">リセット</button>
+        <button type="button" class="primary" id="send">送信</button>
+      </div>
+      <div class="hint">Ctrl+Enter で送信。英語の方がツール選択は安定します(Gemma の案内文が英語のため)。</div>
+    </div>
+  </section>
+  <section class="viewer">
+    <div class="bar">
+      <span id="viewerState">viewer</span>
+      <span class="spacer"></span>
+      <button type="button" id="reloadViewer">再読み込み</button>
+      <a id="viewerLink" target="_blank" rel="noopener">新しいタブで開く</a>
+    </div>
+    <iframe id="viewer" title="Newton viewer"></iframe>
+  </section>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+let session; try { session = localStorage.getItem("nc-session"); } catch {}
+if (!session) { session = Math.random().toString(36).slice(2); try { localStorage.setItem("nc-session", session); } catch {} }
+let lang = "ja", catalog = [];
+// The viewer is relayed by this server (same origin), so it also works behind an HTTPS gateway.
+const viewerUrl = () => `${location.origin}/viewer/`;
+
+// ---------- samples ----------
+function renderSelects() {
+  const cat = $("cat"), sample = $("sample"), ci = cat.selectedIndex < 0 ? 0 : cat.selectedIndex;
+  cat.innerHTML = catalog.map((c, i) => `<option value="${i}">${c.name} (${c.samples.length})</option>`).join("");
+  cat.selectedIndex = ci;
+  sample.innerHTML = `<option value="">— サンプルを選択 —</option>` +
+    catalog[ci].samples.map((s, i) => `<option value="${i}">${escapeHtml(s[lang])}</option>`).join("");
+}
+function renderCatalog() {
+  const q = $("filter").value.trim().toLowerCase();
+  $("catalogList").innerHTML = catalog.map((c) => {
+    const items = c.samples.filter((s) => !q || (s.ja + " " + s.en + " " + c.name).toLowerCase().includes(q));
+    if (!items.length) return "";
+    return `<h3>${c.name}</h3>` + items.map((s) =>
+      `<button type="button" data-text="${escapeHtml(s[lang])}" title="${escapeHtml(lang === "ja" ? s.en : s.ja)}">${escapeHtml(s[lang])}</button>`).join("");
+  }).join("") || `<div class="hint">該当なし</div>`;
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function setInput(t) { $("input").value = t; $("input").focus(); }
+
+$("cat").addEventListener("change", renderSelects);
+$("sample").addEventListener("change", (e) => {
+  if (e.target.value === "") return;
+  setInput(catalog[$("cat").value].samples[e.target.value][lang]);
+});
+$("catalogList").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setInput(b.dataset.text); });
+$("filter").addEventListener("input", renderCatalog);
+$("toggleCatalog").addEventListener("click", () => $("catalog").classList.toggle("open"));
+document.querySelectorAll(".lang button").forEach((b) => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  document.querySelectorAll(".lang button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  renderSelects(); renderCatalog();
+}));
+
+// ---------- chat ----------
+// Minimal Markdown for model replies: **bold**, `code`, and "* " / "- " bullets.
+function md(text) {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/^\s*[*-]\s+/gm, "• ");
+}
+function add(cls, text, html) {
+  const d = document.createElement("div"); d.className = "msg " + cls;
+  if (html) d.innerHTML = md(text); else d.textContent = text;
+  $("log").appendChild(d); $("log").scrollTop = $("log").scrollHeight; return d;
+}
+function addTool(t, before) {
+  const d = document.createElement("details"); d.className = "tool";
+  d.innerHTML = `<summary>🔧 ${escapeHtml(t.name)} ${escapeHtml(JSON.stringify(t.args))}</summary><pre>${escapeHtml(t.result)}</pre>`;
+  $("log").insertBefore(d, before || null); $("log").scrollTop = $("log").scrollHeight;
+}
+async function send() {
+  const text = $("input").value.trim(); if (!text) return;
+  $("input").value = ""; $("send").disabled = true; add("user", text);
+  const wait = add("agent", "…考え中");
+  try {
+    // The turn runs on the server; poll it (each request stays short, so proxies do not time out).
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session, text }) });
+    const started = await r.json();
+    if (!r.ok) { wait.remove(); add("agent err", started.error || r.statusText); return; }
+    let j, shown = 0;
+    for (;;) {
+      await new Promise((res) => setTimeout(res, 1000));
+      const p = await fetch(`/api/chat/${started.id}`, { cache: "no-store" });
+      if (!p.ok) continue;
+      j = await p.json();
+      for (; shown < j.tools.length; shown++) addTool(j.tools[shown], wait);
+      if (j.done) break;
+    }
+    wait.remove();
+    if (j.error) { add("agent err", j.error); return; }
+    add("agent", (j.reply || "(返答なし)").replace(/https?:\/\/[\d.]+:\d+\/?/g, viewerUrl()), true);
+    if (j.tools.some((t) => ["train_task", "play_policy", "open_robot"].includes(t.name) && /start|running|open/i.test(t.result))) waitForViewer();
+    if (j.tools.some((t) => t.name === "stop")) $("viewerState").textContent = "viewer: 停止中";
+  } catch (e) { wait.remove(); add("agent err", String(e)); }
+  finally { $("send").disabled = false; $("log").scrollTop = $("log").scrollHeight; }
+}
+$("send").addEventListener("click", send);
+$("input").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send(); });
+$("reset").addEventListener("click", async () => {
+  await fetch("/api/reset", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session }) });
+  $("log").innerHTML = ""; add("agent", "会話をリセットしました。");
+});
+
+// ---------- viewer ----------
+function reloadViewer() { $("viewer").src = viewerUrl() + "?t=" + Date.now(); }
+async function viewerUp() { try { return (await fetch(viewerUrl(), { method: "GET", cache: "no-store" })).ok; } catch { return false; } }
+async function waitForViewer() {
+  $("viewerState").textContent = "viewer: 起動待ち…";
+  await new Promise((r) => setTimeout(r, 4000));
+  for (let i = 0; i < 45; i++) {
+    if (await viewerUp()) { $("viewerState").textContent = "viewer: 表示中"; reloadViewer(); return; }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  $("viewerState").textContent = "viewer: 応答なし(再読み込みを試してください)";
+}
+$("reloadViewer").addEventListener("click", reloadViewer);
+
+// ---------- job log panel (direct, no model call) ----------
+let logTimer = null;
+async function refreshLogs() {
+  try {
+    const j = await (await fetch("/api/logs?lines=120")).json();
+    const text = j.text || j.error || "";
+    const nl = text.indexOf("\n");
+    $("logfile").textContent = (nl > 0 ? text.slice(0, nl) : "").replace("log_file: ", "").split("/").pop();
+    const pre = $("logtext"), atEnd = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 8;
+    pre.textContent = nl > 0 ? text.slice(nl + 1) : text;
+    if (atEnd) pre.scrollTop = pre.scrollHeight;
+  } catch (e) { $("logtext").textContent = String(e); }
+}
+$("toggleLogs").addEventListener("click", () => {
+  const open = $("logpanel").classList.toggle("open");
+  $("toggleLogs").setAttribute("aria-expanded", String(open));
+  clearInterval(logTimer); logTimer = null;
+  if (open) { refreshLogs().then(() => { $("logtext").scrollTop = $("logtext").scrollHeight; });
+              logTimer = setInterval(() => { if ($("logFollow").checked) refreshLogs(); }, 3000); }
+});
+
+// ---------- status bar ----------
+async function pollStatus() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    const p = s.progress || {};
+    if (s.running) {
+      const it = p.iteration != null ? ` · iter ${p.iteration}/${p.total_iterations ?? "?"}` : "";
+      const rw = p.mean_reward != null ? ` · reward ${p.mean_reward}` : "";
+      const el = p.mean_episode_length != null ? ` · ep ${p.mean_episode_length}` : "";
+      const eta = p.eta ? ` · ETA ${p.eta}` : "";
+      $("status").innerHTML = `<span class="run">● ${escapeHtml(s.kind)}</span> ${escapeHtml(s.label || "")}${escapeHtml(it + rw + el + eta)}`;
+    } else {
+      $("status").innerHTML = `<span class="idle">○ idle</span> ${escapeHtml(s.label ? `last: ${s.kind} ${s.label} (${s.status || ""})` : "")}`;
+    }
+  } catch { $("status").innerHTML = `<span class="idle">status: control server unreachable</span>`; }
+}
+
+(async () => {
+  try { const info = await (await fetch("/api/info")).json(); $("model").textContent = `model: ${info.model}`; } catch {}
+  $("viewerLink").href = viewerUrl();
+  catalog = (await (await fetch("/samples.json")).json()).categories;
+  renderSelects(); renderCatalog();
+  if (await viewerUp()) { $("viewerState").textContent = "viewer: 表示中"; reloadViewer(); } else { $("viewerState").textContent = "viewer: 停止中"; }
+  pollStatus(); setInterval(pollStatus, 3000);
+})();
+</script>
+</body>
+</html>

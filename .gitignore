@@ -24,6 +24,10 @@ newton_sim/_control_logs/
 _scratch/
 install.log
 
+# --- This machine only (its LAN / Tailscale addresses, local env) ---
+docker/compose.override.yaml
+.env
+
 # --- OS / editor ---
 .DS_Store
 *.swp
