@@ -7,7 +7,8 @@ A minimal terminal agent using the SAME `newton__*` tools as the NemoClaw sandbo
     agents/chat.py                       # interactive
     agents/chat.py "train the Go2"       # one-shot
 
-Env: NEWTON_LLM_URL (default http://localhost:8000), NEWTON_LLM_MODEL (default gemma4:12b).
+Env: NEWTON_LLM_URL (default http://localhost:8000), NEWTON_LLM_MODEL (default gemma4:12b),
+     NEWTON_LLM_THINK (default 0: no thinking; 1 lets the model think before answering).
 """
 import json
 import os
@@ -20,6 +21,7 @@ MCP = os.path.join(HERE, "nemoclaw", "newton-mcp.mjs")
 GUIDE = open(os.path.join(HERE, "nemoclaw", "AGENTS-newton.md")).read()
 URL = os.environ.get("NEWTON_LLM_URL", "http://localhost:8000")
 MODEL = os.environ.get("NEWTON_LLM_MODEL", "gemma4:12b")
+THINK = os.environ.get("NEWTON_LLM_THINK", "0").lower() in ("1", "true", "yes")
 ENV = {**os.environ, "NEWTON_CONTROL_HOST": os.environ.get("NEWTON_CONTROL_HOST", "localhost")}
 
 
@@ -31,8 +33,10 @@ def mcp(method, params=None):
 
 
 def llm(messages, tools):
+    # Gemma 4 thinks before answering unless told not to; for one-command routing that multiplies the
+    # output (279 vs 33 tokens on one question, measured on the DGX Spark). NEWTON_LLM_THINK=1 restores it.
     body = {"model": MODEL, "stream": False, "options": {"temperature": 0, "num_ctx": 16384},
-            "messages": messages, "tools": tools}
+            "think": THINK, "messages": messages, "tools": tools}
     req = urllib.request.Request(URL + "/api/chat", json.dumps(body).encode(), {"Content-Type": "application/json"})
     return json.loads(urllib.request.urlopen(req, timeout=600).read())["message"]
 

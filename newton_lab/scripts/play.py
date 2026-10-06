@@ -8,7 +8,8 @@
 Policy source (first match wins):
   --onnx PATH     exported ONNX, run with Warp-NN on the GPU (no PyTorch in the loop)
   --pretrained    the reference ONNX shipped with newton-assets (Go2 / G1 / ANYmal)
-  --checkpoint    an rsl_rl model_*.pt  (default: latest run of the task)
+  --checkpoint    an rsl_rl model_*.pt  (default: latest run of the task; if the task was never trained
+                  here and a reference ONNX ships, that one is used as with --pretrained)
 --eval runs headless and prints one JSON line of metrics (reward, episode length,
 velocity-tracking error, policy + sim throughput).
 """
@@ -56,11 +57,19 @@ def main():
 
     # ---- policy ----
     onnx = args.onnx
+    pretrained = getattr(env.cfg, "pretrained_onnx", None)
+    ckpt = None
     if args.pretrained:
-        rel = getattr(env.cfg, "pretrained_onnx", None)
-        if not rel:
+        if not pretrained:
             sys.exit(f"[play] no pretrained policy ships for {args.task}")
-        onnx = f"{env.asset_root}/{rel}"
+        onnx = f"{env.asset_root}/{pretrained}"
+    elif not onnx:
+        ckpt = args.checkpoint or common.latest_checkpoint(args.task)
+        # Nothing trained here yet: fall back to the reference policy when one ships, so "show me the
+        # Go2" works on a fresh machine (the agent only adds --pretrained when asked for it).
+        if not ckpt and pretrained:
+            print(f"[play] no checkpoint for {args.task} on this machine — using the pretrained policy")
+            onnx = f"{env.asset_root}/{pretrained}"
     if onnx:
         source = f"onnx:{onnx}"
         if num_envs == 1:
@@ -69,7 +78,6 @@ def main():
             policy = _batched_onnx(onnx, args.device)
     else:
         from rsl_rl.runners import OnPolicyRunner
-        ckpt = args.checkpoint or common.latest_checkpoint(args.task)
         if not ckpt:
             sys.exit(f"[play] no checkpoint for {args.task} — train it first, or pass --pretrained / --onnx")
         cfg = common.ppo_cfg(args.task, envs.ppo_overrides(args.task))

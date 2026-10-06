@@ -86,7 +86,7 @@ async function buildTools(){
   const c = await catalog();
   const policyProps = {
     task: S("task id (live list from newton__list_tasks)", c.tasks),
-    pretrained:{ type:"boolean", description:"use the reference policy shipped with the robot assets (Go2 / G1 / ANYmal only) instead of the latest one trained on this Thor" },
+    pretrained:{ type:"boolean", description:"use the reference policy shipped with the robot assets (Go2 / G1 / ANYmal only) instead of the latest one trained on this Thor (used automatically when the task was never trained here)" },
     num_envs:{ type:"integer", description:"number of robots (default 16 for play, 1024 for eval)" },
   };
   return [
